@@ -153,6 +153,7 @@ class App extends Component<{}, State> {
             {(pdfDocument) => (
               <PdfHighlighter
                 pdfDocument={pdfDocument}
+                findRefs={() => {}}
                 enableAreaSelection={(event) => event.altKey}
                 onScrollChange={resetHash}
                 // pdfScaleValue="page-width"
