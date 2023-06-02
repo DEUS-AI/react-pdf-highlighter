@@ -1,5 +1,5 @@
 import React, { PointerEventHandler, PureComponent } from "react";
-import ReactDom from "react-dom";
+import { createRoot } from "react-dom/client";
 import debounce from "lodash.debounce";
 
 import {
@@ -60,6 +60,7 @@ interface State<T_HT> {
   tipChildren: JSX.Element | null;
   isAreaSelectionInProgress: boolean;
   scrolledToHighlightId: string;
+  root: any;
 }
 
 interface Props<T_HT> {
@@ -113,6 +114,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     tip: null,
     tipPosition: null,
     tipChildren: null,
+    root: undefined,
   };
 
   eventBus = new EventBus();
@@ -176,8 +178,8 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     if (prevProps.highlights !== this.props.highlights) {
       this.renderHighlights(this.props);
     }
-    if (prevProps.searchValue !== this.props.searchValue) {
-      this.viewer.findController.executeCommand("find", {
+    if (prevProps.searchValue != this.props.searchValue) {
+      this.eventBus.dispatch("find", {
         query: this.props.searchValue,
         highlightAll: true,
         phraseSearch: true,
@@ -217,34 +219,42 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     let currentMatchIndex = 0;
     let hasCurrentMatchIndex = false;
 
-    this.viewer.findController?.pageMatches?.forEach((pageMatches: number[], pageIndex: number) => {
-      if (!hasCurrentMatchIndex && pageIndex === this.viewer.findController?.selected?.pageIdx) {
-        currentMatchIndex = totalMatchCount + this.viewer.findController?.selected?.matchIdx;
-        hasCurrentMatchIndex = true;
+    this.viewer.findController?.pageMatches?.forEach(
+      (pageMatches: number[], pageIndex: number) => {
+        if (
+          !hasCurrentMatchIndex &&
+          pageIndex === this.viewer.findController?.selected?.pageIdx
+        ) {
+          currentMatchIndex =
+            totalMatchCount + this.viewer.findController?.selected?.matchIdx;
+          hasCurrentMatchIndex = true;
+        }
+        totalMatchCount += pageMatches.length;
       }
-      totalMatchCount += pageMatches.length;
-    })
+    );
 
     const currentMatch = totalMatchCount === 0 ? 0 : currentMatchIndex + 1;
     this.props.onSearch(currentMatch, totalMatchCount);
-  }
+  };
 
   goToNextMatch = () => {
     const { searchValue } = this.props;
-    this.viewer.findController.executeCommand("findagain", {
+    this.eventBus.dispatch("find", {
       query: searchValue,
       highlightAll: true,
-    })
-  }
+      type: "again",
+    });
+  };
 
   goToPreviousMatch = () => {
     const { searchValue } = this.props;
-    this.viewer.findController.executeCommand("findagain", {
+    this.eventBus.dispatch("find", {
       query: searchValue,
       highlightAll: true,
       findPrevious: true,
-    })
-  }
+      type: "again",
+    });
+  };
 
   componentWillUnmount() {
     this.unsubscribe();
@@ -367,7 +377,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
     const { pdfDocument } = this.props;
 
-    const { tip, scrolledToHighlightId } = this.state;
+    const { tip, scrolledToHighlightId, root } = this.state;
 
     const highlightsByPage = this.groupHighlightsByPage(highlights);
 
@@ -375,7 +385,12 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
       const highlightLayer = this.findOrCreateHighlightLayer(pageNumber);
 
       if (highlightLayer) {
-        ReactDom.render(
+        if (root === undefined) {
+          this.setState({
+            root: createRoot(highlightLayer),
+          });
+        }
+        root?.render(
           <div>
             {(highlightsByPage[String(pageNumber)] || []).map(
               ({ position, id, ...highlight }, index) => {
@@ -415,8 +430,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                 );
               }
             )}
-          </div>,
-          highlightLayer
+          </div>
         );
       }
     }
