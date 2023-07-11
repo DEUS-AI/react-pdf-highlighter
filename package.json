@@ -1,5 +1,5 @@
 {
-  "name": "@deus-ai/react-pdf-highlighter",
+  "name": "@deus_ai/react-pdf-highlighter",
   "version": "1.0.0",
   "description": "react-pdf-highlighter with search functionality and updated to React 18",
   "author": "@deus-ai, @darian-lp and Artem Tyurin <artem.tyurin@gmail.com>",
