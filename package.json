@@ -1,6 +1,6 @@
 {
   "name": "@deus_ai/react-pdf-highlighter",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "react-pdf-highlighter with search functionality and updated to React 18",
   "author": "@deus-ai, @darian-lp and Artem Tyurin <artem.tyurin@gmail.com>",
   "license": "MIT",
@@ -30,8 +30,8 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "react": ">=16.4.0",
-    "react-dom": ">=16.4.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@types/lodash.debounce": "^4.0.7",
