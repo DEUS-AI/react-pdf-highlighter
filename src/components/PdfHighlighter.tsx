@@ -60,7 +60,6 @@ interface State<T_HT> {
   tipChildren: JSX.Element | null;
   isAreaSelectionInProgress: boolean;
   scrolledToHighlightId: string;
-  root: any;
 }
 
 interface Props<T_HT> {
@@ -114,7 +113,6 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     tip: null,
     tipPosition: null,
     tipChildren: null,
-    root: undefined,
   };
 
   eventBus = new EventBus();
@@ -262,13 +260,12 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   findOrCreateHighlightLayer(page: number) {
     const { textLayer } = this.viewer.getPageView(page - 1) || {};
-
     if (!textLayer) {
       return null;
     }
 
     return findOrCreateContainerLayer(
-      textLayer.textLayerDiv,
+      textLayer.div,
       "PdfHighlighter__highlight-layer"
     );
   }
@@ -377,19 +374,14 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
     const { pdfDocument } = this.props;
 
-    const { tip, scrolledToHighlightId, root } = this.state;
+    const { tip, scrolledToHighlightId } = this.state;
 
     const highlightsByPage = this.groupHighlightsByPage(highlights);
 
     for (let pageNumber = 1; pageNumber <= pdfDocument.numPages; pageNumber++) {
       const highlightLayer = this.findOrCreateHighlightLayer(pageNumber);
-
       if (highlightLayer) {
-        if (root === undefined) {
-          this.setState({
-            root: createRoot(highlightLayer),
-          });
-        }
+        const root = createRoot(highlightLayer);
         root?.render(
           <div>
             {(highlightsByPage[String(pageNumber)] || []).map(
@@ -422,10 +414,11 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                     const viewport = this.viewer.getPageView(
                       (rect.pageNumber || pageNumber) - 1
                     ).viewport;
-
                     return viewportToScaled(rect, viewport);
                   },
-                  (boundingRect) => this.screenshot(boundingRect, pageNumber),
+                  (boundingRect) => {
+                    return this.screenshot(boundingRect, pageNumber);
+                  },
                   isScrolledTo
                 );
               }

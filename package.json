@@ -30,8 +30,8 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "react": ">=16.4.0",
-    "react-dom": ">=16.4.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@types/lodash.debounce": "^4.0.7",
